@@ -13,7 +13,7 @@ pageextension 50101 "Item List SS Ext" extends "Item List"
                 }
             }
         }
-        addlast("F&unctions")
+        addafter("Stockkeepin&g Units")
         {
             action(CalcSafetyStockBulk)
             {
