@@ -240,19 +240,32 @@ codeunit 50100 "Safety Stock Calculator"
         // Approximation table for common service levels.
         // For arbitrary values, falls back to closest match.
         case true of
-            ServiceLevelPct >= 99.99: exit(3.7190);
-            ServiceLevelPct >= 99.90: exit(3.0902);
-            ServiceLevelPct >= 99.50: exit(2.5758);
-            ServiceLevelPct >= 99.00: exit(2.3263);
-            ServiceLevelPct >= 98.00: exit(2.0537);
-            ServiceLevelPct >= 97.50: exit(1.9600);
-            ServiceLevelPct >= 97.00: exit(1.8808);
-            ServiceLevelPct >= 96.00: exit(1.7507);
-            ServiceLevelPct >= 95.00: exit(1.6449);
-            ServiceLevelPct >= 90.00: exit(1.2816);
-            ServiceLevelPct >= 85.00: exit(1.0364);
-            ServiceLevelPct >= 80.00: exit(0.8416);
-            ServiceLevelPct >= 75.00: exit(0.6745);
+            ServiceLevelPct >= 99.99:
+                exit(3.7190);
+            ServiceLevelPct >= 99.90:
+                exit(3.0902);
+            ServiceLevelPct >= 99.50:
+                exit(2.5758);
+            ServiceLevelPct >= 99.00:
+                exit(2.3263);
+            ServiceLevelPct >= 98.00:
+                exit(2.0537);
+            ServiceLevelPct >= 97.50:
+                exit(1.9600);
+            ServiceLevelPct >= 97.00:
+                exit(1.8808);
+            ServiceLevelPct >= 96.00:
+                exit(1.7507);
+            ServiceLevelPct >= 95.00:
+                exit(1.6449);
+            ServiceLevelPct >= 90.00:
+                exit(1.2816);
+            ServiceLevelPct >= 85.00:
+                exit(1.0364);
+            ServiceLevelPct >= 80.00:
+                exit(0.8416);
+            ServiceLevelPct >= 75.00:
+                exit(0.6745);
             else
                 exit(0.5244); // 70%
         end;
@@ -268,6 +281,11 @@ codeunit 50100 "Safety Stock Calculator"
         Today2 := Today;
         ResultDate := CalcDate(DF, Today2);
         exit(ResultDate - Today2);
+    end;
+
+    local procedure Sqrt(Value: Decimal): Decimal
+    begin
+        exit(Power(Value, 0.5));
     end;
 
     local procedure LogResult(ItemNo: Code[20]; SLPct: Decimal; Z: Decimal; AvgD: Decimal; SDD: Decimal; AvgLT: Decimal; SDL: Decimal; Obs: Integer; Result: Decimal; PrevResult: Decimal; ResultCode: Enum "Safety Stock Result Code"; Note: Text[250])

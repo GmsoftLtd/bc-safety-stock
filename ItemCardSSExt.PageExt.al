@@ -13,7 +13,7 @@ pageextension 50100 "Item Card SS Ext" extends "Item Card"
                 }
             }
         }
-        addafter("Co&pyItem")
+        addafter("Stockkeepin&g Units")
         {
             action(CalcSafetyStock)
             {

@@ -34,7 +34,7 @@ codeunit 50101 "Safety Stock Job Queue Run"
         Calc.CalculateBulk(Item, ServiceLevel, true);
     end;
 
-    local procedure GetParam(Params: Text; Key: Text): Text
+    local procedure GetParam(Params: Text; pKey: Text): Text
     var
         i: Integer;
         Segments: List of [Text];
@@ -47,7 +47,7 @@ codeunit 50101 "Safety Stock Job Queue Run"
             KvSplit := StrPos(Segment, '=');
             if KvSplit > 0 then begin
                 ThisKey := CopyStr(Segment, 1, KvSplit - 1).Trim();
-                if UpperCase(ThisKey) = UpperCase(Key) then
+                if UpperCase(ThisKey) = UpperCase(pKey) then
                     exit(CopyStr(Segment, KvSplit + 1).Trim());
             end;
         end;
