@@ -13,6 +13,14 @@ codeunit 50100 "Safety Stock Calculator"
     /// </summary>
     procedure CalculateForItem(ItemNo: Code[20]; ServiceLevelPct: Decimal; Apply: Boolean): Decimal
     var
+        ResultCode: Enum "Safety Stock Result Code";
+        Note: Text[250];
+    begin
+        exit(CalculateForItem(ItemNo, ServiceLevelPct, Apply, ResultCode, Note));
+    end;
+
+    procedure CalculateForItem(ItemNo: Code[20]; ServiceLevelPct: Decimal; Apply: Boolean; var ResultCode: Enum "Safety Stock Result Code"; var Note: Text[250]): Decimal
+    var
         Item: Record Item;
         LogEntry: Record "Safety Stock Calculation Log";
         AvgDemand: Decimal;
@@ -23,8 +31,6 @@ codeunit 50100 "Safety Stock Calculator"
         ZScore: Decimal;
         SafetyStock: Decimal;
         PreviousSS: Decimal;
-        ResultCode: Enum "Safety Stock Result Code";
-        Note: Text[250];
     begin
         EnsureSetup();
         if not Item.Get(ItemNo) then
@@ -76,10 +82,13 @@ codeunit 50100 "Safety Stock Calculator"
         end;
 
         ResultCode := ResultCode::OK;
-        Note := StrSubstNo('Z=%1; LT=%2 d (σ=%3); D=%4/d (σ=%5); n=%6 obs.',
-            Format(Round(ZScore, 0.0001), 0, 9), Format(Round(AvgLeadTime, 0.01), 0, 9),
-            Format(Round(LeadTimeStdDev, 0.01), 0, 9), Format(Round(AvgDemand, 0.01), 0, 9),
-            Format(Round(DemandStdDev, 0.01), 0, 9), Observations);
+        Note := CopyStr(
+            BuildReason(SafetyStock, ServiceLevelPct, DemandStdDev, LeadTimeStdDev) + ' ' +
+            StrSubstNo('Z=%1; LT=%2 d (σ=%3); D=%4/d (σ=%5); n=%6 obs.',
+                Format(Round(ZScore, 0.0001), 0, 9), Format(Round(AvgLeadTime, 0.01), 0, 9),
+                Format(Round(LeadTimeStdDev, 0.01), 0, 9), Format(Round(AvgDemand, 0.01), 0, 9),
+                Format(Round(DemandStdDev, 0.01), 0, 9), Observations),
+            1, 250);
 
         LogResult(Item."No.", ServiceLevelPct, ZScore, AvgDemand, DemandStdDev, AvgLeadTime, LeadTimeStdDev, Observations, SafetyStock, PreviousSS, ResultCode, Note);
 
@@ -268,6 +277,28 @@ codeunit 50100 "Safety Stock Calculator"
                 exit(0.6745);
             else
                 exit(0.5244); // 70%
+        end;
+    end;
+
+    local procedure BuildReason(SafetyStock: Decimal; ServiceLevelPct: Decimal; DemandStdDev: Decimal; LeadTimeStdDev: Decimal): Text
+    var
+        DemandVaries: Boolean;
+        LeadVaries: Boolean;
+    begin
+        if SafetyStock <= 0 then
+            exit('No buffer needed: demand and lead time are perfectly stable over the history window (σ=0), so no variability to cover.');
+
+        DemandVaries := DemandStdDev > 0;
+        LeadVaries := LeadTimeStdDev > 0;
+        case true of
+            DemandVaries and LeadVaries:
+                exit(StrSubstNo('Buffer covers both demand variability and lead-time variability at %1%% service level.', Format(ServiceLevelPct, 0, 9)));
+            DemandVaries:
+                exit(StrSubstNo('Buffer covers demand variability over a stable lead time at %1%% service level.', Format(ServiceLevelPct, 0, 9)));
+            LeadVaries:
+                exit(StrSubstNo('Buffer covers lead-time variability over stable demand at %1%% service level.', Format(ServiceLevelPct, 0, 9)));
+            else
+                exit('');
         end;
     end;
 

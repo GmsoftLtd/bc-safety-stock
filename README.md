@@ -28,10 +28,10 @@ Where:
 
 ## Features
 
-- **Item Card action** — calculate for one item, see the result, choose to apply
-- **Item List bulk action** — process all filtered/selected items in one run
+- **Item Card action** — *Calculate Safety Stock (Sales-Based)* — calculate for one item, see the result code + reason, choose to apply
+- **Item List bulk action** — *Calculate Safety Stock (Bulk, Sales-Based)* — process all filtered/selected items in one run, with a heads-up if any aren't purchase-replenished
 - **Job Queue codeunit** — schedule recurring recalculation (weekly, monthly)
-- **Calculation log** — every run is logged for traceability (item, datetime, user, z-score, stddev values, result)
+- **Calculation log** — every run is logged for traceability (item, datetime, user, z-score, stddev values, result code, plain-English reason)
 - **Setup page** — service level, history window, min observations, round behaviour
 - **Service levels supported** — 70% to 99.99% (Z-scores hard-coded for accuracy)
 
@@ -89,6 +89,18 @@ To schedule monthly recalculation of all FERT items at 99% service level:
 
 Without parameters, all inventory items are processed at the setup default service level.
 
+### Sandbox: try it on a clean item
+
+If you want to see real numbers without scrubbing live data:
+
+1. Open any Item Card in a **sandbox** environment
+2. Click **Generate Demo Data (Sandbox)** — creates ~6 past Purchase Orders, ~30 past Sales Orders (last 180 days), and 3 future Sales Orders for the current item; all unposted
+3. Open **Purchase Orders**, multi-select the new ones, *Post Batch* — builds inventory
+4. Open **Sales Orders**, multi-select the new past ones, *Post Batch* — creates demand history
+5. Back on the Item Card, click **Calculate Safety Stock (Sales-Based)** — you should now get a non-zero result with a meaningful reason
+
+⚠ This action is for sandbox/test use only — it floods your order tables with synthetic data. Remove the `SafetyStockDemoData.Codeunit.al` file (and the `GenerateSSDemoData` action) before building a production `.app`.
+
 ## Configuration
 
 **Safety Stock Setup** page (Search → Safety Stock Setup):
@@ -102,18 +114,21 @@ Without parameters, all inventory items are processed at the setup default servi
 
 ## Limitations
 
-- **Sales-only demand** — counts Item Ledger Entries of type `Sale`. Doesn't include intercompany transfers, production consumption, etc. (Easy to extend — see `ComputeDemandStats`.)
-- **Assumes normal distribution** — standard for safety stock theory but breaks down for highly skewed/lumpy demand. For very slow movers, consider category-based defaults instead.
-- **Lead time from PO receipts only** — uses purchase receipts, not transfer or production lead times
-- **No seasonality adjustment** — uses flat average. For seasonal items, run during the relevant season window
-- **No multi-location split** — calculates globally per item. Multi-location stockholding logic is left to the user
+> **This is a sales-based, purchase-replenished tool.** It is intended for items the company **buys and resells**. Manufactured items, sub-assemblies, and BOM components will typically return **0** because their outbound movements post as `Consumption` / `Assembly Consumption` (not `Sale`) and their inbound movements come from production / assembly orders (not `Purch. Rcpt. Line`). A paid manufacturer-aware edition with `Replenishment System` branching is planned — this free edition deliberately keeps the scope narrow.
+
+- **Sales-only demand** — counts Item Ledger Entries of type `Sale`. Doesn't include `Consumption`, `Assembly Consumption`, `Transfer`, or `Negative Adjmt.`
+- **Lead time from PO receipts only** — uses purchase receipts (`Order Date` → `Posting Date`). No production-order or assembly-order lead times.
+- **Assumes normal distribution** — standard safety-stock theory; breaks down for highly skewed/lumpy demand. For very slow movers, prefer category-based defaults.
+- **No seasonality adjustment** — uses a flat average over the history window. For seasonal items, run during the relevant season.
+- **No multi-location split** — calculates globally per item. Per-location stockholding logic is up to the user.
 
 ## When NOT to use this
 
-- **Brand-new items** (<10 historical demand events): use a category default
-- **Lumpy/intermittent demand**: Z-score method assumes near-normal. Consider Croston's method instead
-- **Configurable / make-to-order items**: safety stock applies to make-to-stock only
-- **Items with regulatory min stock** — those values come from compliance, not statistics
+- **Manufacturers running production** on the items in scope — the calc will return 0 for components and sub-assemblies. Wait for the paid manufacturer edition or extend `ComputeDemandStats` / `ComputeLeadTimeStats` yourself.
+- **Brand-new items** (< minimum demand observations): use a category default instead.
+- **Lumpy/intermittent demand**: Z-score method assumes near-normal. Consider Croston's method.
+- **Configurable / make-to-order items**: safety stock applies to make-to-stock only.
+- **Items with regulatory min stock**: those values come from compliance, not statistics.
 
 ## Related
 

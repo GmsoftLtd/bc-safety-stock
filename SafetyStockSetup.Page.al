@@ -55,6 +55,27 @@ page 50100 "Safety Stock Setup"
         }
     }
 
+    actions
+    {
+        area(Processing)
+        {
+            action(OpenLog)
+            {
+                Caption = 'Calculation Log';
+                ApplicationArea = All;
+                Image = Log;
+                RunObject = page "Safety Stock Calculation Log";
+                ToolTip = 'Open the Safety Stock Calculation Log to review past calculation runs (all items, all users).';
+            }
+        }
+        area(Promoted)
+        {
+            actionref(OpenLog_Promoted; OpenLog)
+            {
+            }
+        }
+    }
+
     trigger OnOpenPage()
     begin
         Rec.GetSetup();
