@@ -12,6 +12,7 @@ codeunit 50199 "Safety Stock Demo Data"
     procedure GenerateForItem(ItemNo: Code[20])
     var
         Item: Record Item;
+        EnvInfo: Codeunit "Environment Information";
         CustNo: Code[20];
         VendNo: Code[20];
         LocationCode: Code[10];
@@ -26,6 +27,9 @@ codeunit 50199 "Safety Stock Demo Data"
         FutureSalesCount: Integer;
         ResultTxt: Label 'Demo data created for item %1:\\Past Purchase Orders (post these FIRST to build inventory): %2\Past Sales Orders (post AFTER the POs to create demand history): %3\Future Sales Orders (leave unposted; for visual / MRP reference): %4\\Tip: open Sales Orders / Purchase Orders and use Post Batch.';
     begin
+        if not EnvInfo.IsSandbox() then
+            Error('Safety Stock Demo Data is a sandbox-only utility. The current environment is a production environment.');
+
         if not Item.Get(ItemNo) then
             Error('Item %1 does not exist.', ItemNo);
 
@@ -99,8 +103,9 @@ codeunit 50199 "Safety Stock Demo Data"
         InvSetup.Get();
         if InvSetup."Location Mandatory" then begin
             Location.SetRange("Use As In-Transit", false);
-            if Location.FindFirst() then
-                exit(Location.Code);
+            if not Location.FindFirst() then
+                Error('Inventory Setup requires a Location, but no non-in-transit Location exists. Create a Location before generating demo data.');
+            exit(Location.Code);
         end;
         exit('');
     end;
@@ -118,6 +123,8 @@ codeunit 50199 "Safety Stock Demo Data"
         SH.Validate("Order Date", PostingDate);
         SH.Validate("Document Date", PostingDate);
         SH.Validate("Shipment Date", PostingDate);
+        if LocationCode <> '' then
+            SH.Validate("Location Code", LocationCode);
         SH.Modify(true);
 
         SL.Init();
@@ -144,6 +151,8 @@ codeunit 50199 "Safety Stock Demo Data"
         SH.Validate("Order Date", Today);
         SH.Validate("Document Date", Today);
         SH.Validate("Shipment Date", ShipmentDate);
+        if LocationCode <> '' then
+            SH.Validate("Location Code", LocationCode);
         SH.Modify(true);
 
         SL.Init();
@@ -171,6 +180,8 @@ codeunit 50199 "Safety Stock Demo Data"
         PH.Validate("Order Date", OrderDate);
         PH.Validate("Posting Date", ReceiptDate);
         PH.Validate("Document Date", OrderDate);
+        if LocationCode <> '' then
+            PH.Validate("Location Code", LocationCode);
         PH.Modify(true);
 
         PL.Init();

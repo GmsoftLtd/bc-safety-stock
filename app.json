@@ -2,7 +2,7 @@
   "id": "8a3c4b1e-6d2f-4a7b-9e3c-0f1d2b3a4c5d",
   "name": "BC Safety Stock Calculator",
   "publisher": "GMSOFT Limited",
-  "version": "1.0.0.0",
+  "version": "1.0.1.0",
   "brief": "Calculate Safety Stock in Business Central using the Z-score method.",
   "description": "Adds Item Card + Item List actions to compute Safety Stock based on demand variability and lead time variability. Optional Job Queue for scheduled bulk recalculation. MIT licensed, free, open source.",
   "privacyStatement": "https://gmsoft.co.uk/privacy",

@@ -31,7 +31,7 @@ pageextension 50101 "Item List SS Ext" extends "Item List"
                     Setup.GetSetup();
 
                     CurrPage.SetSelectionFilter(Item);
-                    if Item.IsEmpty then
+                    if Item.GetFilter("No.") = '' then
                         Item.CopyFilters(Rec);
 
                     NonPurchaseCount := CountNonPurchase(Item);

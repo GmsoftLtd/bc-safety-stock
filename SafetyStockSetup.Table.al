@@ -15,7 +15,7 @@ table 50100 "Safety Stock Setup"
             Caption = 'Default Service Level %';
             DataClassification = CustomerContent;
             DecimalPlaces = 2 : 2;
-            MinValue = 50;
+            MinValue = 70;
             MaxValue = 99.99;
             InitValue = 95;
         }

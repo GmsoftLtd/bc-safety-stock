@@ -33,6 +33,9 @@ codeunit 50100 "Safety Stock Calculator"
         PreviousSS: Decimal;
     begin
         EnsureSetup();
+        if (ServiceLevelPct <= 0) or (ServiceLevelPct > 100) then
+            ServiceLevelPct := Setup."Default Service Level %";
+
         if not Item.Get(ItemNo) then
             exit(0);
 
@@ -107,27 +110,32 @@ codeunit 50100 "Safety Stock Calculator"
         Done: Integer;
     begin
         EnsureSetup();
-        if ServiceLevelPct = 0 then
+        if (ServiceLevelPct <= 0) or (ServiceLevelPct > 100) then
             ServiceLevelPct := Setup."Default Service Level %";
 
         Item.CopyFilters(ItemFilter);
         Item.SetRange(Type, Item.Type::Inventory);
+        Item.SetRange(Blocked, false);
         Total := Item.Count();
         if Total = 0 then
             exit(0);
 
-        Window.Open('Calculating Safety Stock...\#1######### / #2#########');
-        Window.Update(2, Format(Total));
+        if GuiAllowed then begin
+            Window.Open('Calculating Safety Stock...\#1######### / #2#########');
+            Window.Update(2, Format(Total));
+        end;
 
         if Item.FindSet() then
             repeat
                 Done += 1;
-                Window.Update(1, Format(Done));
+                if GuiAllowed then
+                    Window.Update(1, Format(Done));
                 CalculateForItem(Item."No.", ServiceLevelPct, Apply);
                 ProcessedCount += 1;
             until Item.Next() = 0;
 
-        Window.Close();
+        if GuiAllowed then
+            Window.Close();
         exit(ProcessedCount);
     end;
 
@@ -148,7 +156,8 @@ codeunit 50100 "Safety Stock Calculator"
         d: Date;
         qty: Decimal;
         WindowStart: Date;
-        n: Integer;
+        SellingDays: Integer;
+        CalendarDays: Integer;
         Mean: Decimal;
         Variance: Decimal;
     begin
@@ -157,6 +166,9 @@ codeunit 50100 "Safety Stock Calculator"
         Observations := 0;
 
         WindowStart := CalcDate(StrSubstNo('<-%1D>', Setup."History Window (Days)"), Today);
+        CalendarDays := Today - WindowStart + 1;
+        if CalendarDays <= 0 then
+            exit;
 
         ILE.SetCurrentKey("Item No.", "Posting Date");
         ILE.SetRange("Item No.", ItemNo);
@@ -176,19 +188,22 @@ codeunit 50100 "Safety Stock Calculator"
             end;
         until ILE.Next() = 0;
 
-        n := DailyDemand.Count;
-        if n = 0 then
+        SellingDays := DailyDemand.Count;
+        if SellingDays = 0 then
             exit;
 
+        // Mean and variance computed over ALL calendar days in the window
+        // (zero-demand days contribute 0 to the sum but DO count toward the divisor).
+        // This makes "average daily demand" consistent with the calendar-day lead time.
         foreach d in DailyDemand.Keys do begin
             qty := DailyDemand.Get(d);
             Sum_Qty += qty;
             SumSq_Qty += qty * qty;
         end;
 
-        Mean := Sum_Qty / n;
-        if n > 1 then
-            Variance := (SumSq_Qty - n * Mean * Mean) / (n - 1)
+        Mean := Sum_Qty / CalendarDays;
+        if CalendarDays > 1 then
+            Variance := (SumSq_Qty - CalendarDays * Mean * Mean) / (CalendarDays - 1)
         else
             Variance := 0;
 
@@ -196,7 +211,7 @@ codeunit 50100 "Safety Stock Calculator"
 
         AvgDemand := Mean;
         StdDev := Sqrt(Variance);
-        Observations := n;
+        Observations := SellingDays;
     end;
 
     local procedure ComputeLeadTimeStats(ItemNo: Code[20]; var AvgLT: Decimal; var StdDev: Decimal)
@@ -247,7 +262,11 @@ codeunit 50100 "Safety Stock Calculator"
     local procedure GetZScore(ServiceLevelPct: Decimal): Decimal
     begin
         // Approximation table for common service levels.
-        // For arbitrary values, falls back to closest match.
+        // Behaviour: floors to the nearest lower bucket (e.g. 94.9% maps to the 90% Z-score).
+        // This is intentional — service levels are normally configured deliberately
+        // (95.00 / 97.50 / 99.00 etc), and flooring is conservative if you happen to
+        // configure an unusual value. Setup table enforces MinValue = 70 so the floor
+        // never falls below the lowest defined bucket.
         case true of
             ServiceLevelPct >= 99.99:
                 exit(3.7190);

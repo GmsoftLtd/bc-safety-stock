@@ -26,28 +26,25 @@ pageextension 50100 "Item Card SS Ext" extends "Item Card"
                     ServiceLevel: Decimal;
                     Result: Decimal;
                     ApplyResult: Boolean;
-                    Warning: Text;
                     Details: Text;
-                    MsgTxt: Label '%1Safety Stock for %2: %3 units.\Previous value: %4.\Result: %5%6\\Apply this value to the item?';
-                    MsgPreviewTxt: Label '%1Safety Stock for %2 would be: %3 units (preview only).\Previous value: %4.\Result: %5%6';
-                    NotPurchasedTxt: Label 'Warning: this item is set to %1 replenishment. This tool uses historical sales/purchases only and is intended for purchased-and-resold items. Result may not be meaningful for produced or assembled items.\\';
+                    MsgTxt: Label 'Safety Stock for %1: %2 units.\Previous value: %3.\Result: %4%5\\Apply this value to the item?';
+                    MsgPreviewTxt: Label 'Safety Stock for %1 would be: %2 units (preview only).\Previous value: %3.\Result: %4%5';
                 begin
                     Setup.GetSetup();
                     ServiceLevel := Setup."Default Service Level %";
-
-                    if Rec."Replenishment System" <> Rec."Replenishment System"::Purchase then
-                        Warning := StrSubstNo(NotPurchasedTxt, Format(Rec."Replenishment System"));
 
                     Result := Calc.CalculateForItem(Rec."No.", ServiceLevel, false, ResultCode, Note);
                     if Note <> '' then
                         Details := '\' + Note;
 
                     if Setup."Update Item Field" then begin
-                        ApplyResult := Confirm(MsgTxt, true, Warning, Rec."No.", Format(Result), Format(Rec."Safety Stock Quantity"), Format(ResultCode), Details);
-                        if ApplyResult then
-                            Calc.CalculateForItem(Rec."No.", ServiceLevel, true);
+                        ApplyResult := Confirm(MsgTxt, true, Rec."No.", Format(Result), Format(Rec."Safety Stock Quantity"), Format(ResultCode), Details);
+                        if ApplyResult then begin
+                            Rec.Validate("Safety Stock Quantity", Result);
+                            Rec.Modify(true);
+                        end;
                     end else
-                        Message(MsgPreviewTxt, Warning, Rec."No.", Format(Result), Format(Rec."Safety Stock Quantity"), Format(ResultCode), Details);
+                        Message(MsgPreviewTxt, Rec."No.", Format(Result), Format(Rec."Safety Stock Quantity"), Format(ResultCode), Details);
 
                     CurrPage.Update(true);
                 end;
