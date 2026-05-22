@@ -172,6 +172,7 @@ codeunit 50199 "Safety Stock Demo Data"
     var
         PH: Record "Purchase Header";
         PL: Record "Purchase Line";
+        ReleasePurchDoc: Codeunit "Release Purchase Document";
     begin
         PH.Init();
         PH."Document Type" := PH."Document Type"::Order;
@@ -180,6 +181,7 @@ codeunit 50199 "Safety Stock Demo Data"
         PH.Validate("Order Date", OrderDate);
         PH.Validate("Posting Date", ReceiptDate);
         PH.Validate("Document Date", OrderDate);
+        PH.Validate("Vendor Invoice No.", CopyStr('INV-' + PH."No.", 1, MaxStrLen(PH."Vendor Invoice No.")));
         if LocationCode <> '' then
             PH.Validate("Location Code", LocationCode);
         PH.Modify(true);
@@ -195,5 +197,7 @@ codeunit 50199 "Safety Stock Demo Data"
         PL.Validate(Quantity, Qty);
         PL.Validate("Expected Receipt Date", ReceiptDate);
         PL.Insert(true);
+
+        ReleasePurchDoc.PerformManualRelease(PH);
     end;
 }
