@@ -16,3 +16,24 @@ rad.json
 .DS_Store
 Thumbs.db
 *.bak
+
+# AL-Go for GitHub build artifacts
+*.app
+*.flf
+*.bclicense
+*.g.xlf
+TestResults*.xml
+bcptTestResults*.json
+BuildOutput.txt
+rad.json
+.output/
+.dependencies/
+.buildartifacts/
+.packages/
+.alpackages/
+.alcache/
+.altemplates/
+.altestrunner/
+.snapshots/
+cache_*
+~$*
