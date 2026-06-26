@@ -1,3 +1,8 @@
+/// <summary>
+/// Singleton setup table holding the default parameters for Safety Stock
+/// calculations: service level, history window, minimum observations, and the
+/// rounding/update/logging behaviour switches.
+/// </summary>
 table 50100 "Safety Stock Setup"
 {
     Caption = 'Safety Stock Setup';
@@ -62,6 +67,10 @@ table 50100 "Safety Stock Setup"
         }
     }
 
+    /// <summary>
+    /// Retrieves the singleton setup record, creating it with default values if it
+    /// does not yet exist.
+    /// </summary>
     procedure GetSetup()
     begin
         if not Get() then begin

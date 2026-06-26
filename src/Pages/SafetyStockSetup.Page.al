@@ -1,3 +1,7 @@
+/// <summary>
+/// Administration card page for editing the Safety Stock Setup parameters and
+/// opening the calculation log.
+/// </summary>
 page 50100 "Safety Stock Setup"
 {
     Caption = 'Safety Stock Setup';

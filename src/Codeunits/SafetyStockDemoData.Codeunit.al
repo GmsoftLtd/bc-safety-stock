@@ -1,3 +1,8 @@
+/// <summary>
+/// Sandbox-only utility that generates unposted demo Sales and Purchase Orders for an
+/// item so the Safety Stock calculator has historical data to work with. Refuses to run
+/// in production environments.
+/// </summary>
 codeunit 50199 "Safety Stock Demo Data"
 {
     // SANDBOX UTILITY — generates unposted demo Sales and Purchase Orders
@@ -9,6 +14,12 @@ codeunit 50199 "Safety Stock Demo Data"
                   tabledata "Purchase Header" = rim,
                   tabledata "Purchase Line" = rim;
 
+    /// <summary>
+    /// Generates demo data for the given item: ~6 past Purchase Orders and ~30 past
+    /// Sales Orders within the last 180 days, plus 3 future Sales Orders, all unposted.
+    /// Sandbox environments only.
+    /// </summary>
+    /// <param name="ItemNo">The item to create demo Sales and Purchase Orders for.</param>
     procedure GenerateForItem(ItemNo: Code[20])
     var
         Item: Record Item;

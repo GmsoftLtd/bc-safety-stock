@@ -1,3 +1,7 @@
+/// <summary>
+/// Outcome codes for a Safety Stock calculation, indicating whether it succeeded
+/// or why it was skipped (insufficient demand, no lead time, item blocked, etc.).
+/// </summary>
 enum 50100 "Safety Stock Result Code"
 {
     Extensible = true;

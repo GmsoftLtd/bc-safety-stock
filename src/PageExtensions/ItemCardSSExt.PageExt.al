@@ -1,3 +1,7 @@
+/// <summary>
+/// Adds Safety Stock actions to the Item Card: calculate (sales-based) for the
+/// current item, open its calculation log, and generate sandbox demo data.
+/// </summary>
 pageextension 50100 "Item Card SS Ext" extends "Item Card"
 {
     actions

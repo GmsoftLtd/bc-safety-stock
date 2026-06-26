@@ -1,3 +1,8 @@
+/// <summary>
+/// Audit log of Safety Stock calculations. One entry per calculation run records
+/// the inputs (service level, demand and lead-time statistics), the result, and the
+/// previous value, for traceability.
+/// </summary>
 table 50101 "Safety Stock Calculation Log"
 {
     Caption = 'Safety Stock Calculation Log';

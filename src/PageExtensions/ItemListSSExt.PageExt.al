@@ -1,3 +1,7 @@
+/// <summary>
+/// Adds a bulk Safety Stock action to the Item List that calculates results for
+/// the items currently filtered or selected, using historical sales and receipts.
+/// </summary>
 pageextension 50101 "Item List SS Ext" extends "Item List"
 {
     actions

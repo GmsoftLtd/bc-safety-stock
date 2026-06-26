@@ -1,3 +1,8 @@
+/// <summary>
+/// Job Queue entry point that runs the Safety Stock bulk calculation on a schedule.
+/// Reads an optional Parameter String (FILTER=... ;SERVICELEVEL=...) to scope the
+/// items and override the service level; otherwise processes all inventory items.
+/// </summary>
 codeunit 50101 "Safety Stock Job Queue Run"
 {
     // Schedule via: Job Queue Entry -> Object Type to Run: Codeunit -> Object ID: 50101

@@ -1,3 +1,7 @@
+/// <summary>
+/// Core engine that computes Safety Stock from historical sales demand and purchase
+/// lead times using the Z-score method, for single items or in bulk, and logs each run.
+/// </summary>
 codeunit 50100 "Safety Stock Calculator"
 {
     Permissions = tabledata Item = rm,
@@ -9,8 +13,12 @@ codeunit 50100 "Safety Stock Calculator"
 
     /// <summary>
     /// Calculates and (optionally) updates Safety Stock for a single item.
-    /// Returns the calculated safety stock quantity. Logs to history if enabled.
+    /// Logs to history if enabled.
     /// </summary>
+    /// <param name="ItemNo">The item to calculate Safety Stock for.</param>
+    /// <param name="ServiceLevelPct">Target service level percentage; values outside 0-100 fall back to the setup default.</param>
+    /// <param name="Apply">When true, writes the result to Item."Safety Stock Quantity" (subject to the setup switch).</param>
+    /// <returns>The calculated Safety Stock quantity, or 0 when the item cannot be calculated.</returns>
     procedure CalculateForItem(ItemNo: Code[20]; ServiceLevelPct: Decimal; Apply: Boolean): Decimal
     var
         ResultCode: Enum "Safety Stock Result Code";
@@ -19,6 +27,16 @@ codeunit 50100 "Safety Stock Calculator"
         exit(CalculateForItem(ItemNo, ServiceLevelPct, Apply, ResultCode, Note));
     end;
 
+    /// <summary>
+    /// Calculates and (optionally) updates Safety Stock for a single item, also
+    /// returning the outcome code and an explanatory note. Logs to history if enabled.
+    /// </summary>
+    /// <param name="ItemNo">The item to calculate Safety Stock for.</param>
+    /// <param name="ServiceLevelPct">Target service level percentage; values outside 0-100 fall back to the setup default.</param>
+    /// <param name="Apply">When true, writes the result to Item."Safety Stock Quantity" (subject to the setup switch).</param>
+    /// <param name="ResultCode">Returns the outcome of the calculation (OK or the reason it was skipped).</param>
+    /// <param name="Note">Returns a human-readable explanation of the result.</param>
+    /// <returns>The calculated Safety Stock quantity, or 0 when the item cannot be calculated.</returns>
     procedure CalculateForItem(ItemNo: Code[20]; ServiceLevelPct: Decimal; Apply: Boolean; var ResultCode: Enum "Safety Stock Result Code"; var Note: Text[250]): Decimal
     var
         Item: Record Item;
@@ -100,7 +118,12 @@ codeunit 50100 "Safety Stock Calculator"
 
     /// <summary>
     /// Bulk calculation for items currently filtered on the Item record passed in.
+    /// Restricts to non-blocked inventory items and shows a progress dialog when in a UI.
     /// </summary>
+    /// <param name="ItemFilter">An Item record carrying the filters that select which items to process.</param>
+    /// <param name="ServiceLevelPct">Target service level percentage; values outside 0-100 fall back to the setup default.</param>
+    /// <param name="Apply">When true, writes each result to Item."Safety Stock Quantity" (subject to the setup switch).</param>
+    /// <returns>The number of items processed.</returns>
     procedure CalculateBulk(var ItemFilter: Record Item; ServiceLevelPct: Decimal; Apply: Boolean): Integer
     var
         Item: Record Item;

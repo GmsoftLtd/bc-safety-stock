@@ -1,3 +1,7 @@
+/// <summary>
+/// Read-only list page showing the Safety Stock Calculation Log, newest entries
+/// first, for reviewing past calculation runs across all items and users.
+/// </summary>
 page 50101 "Safety Stock Calculation Log"
 {
     Caption = 'Safety Stock Calculation Log';
