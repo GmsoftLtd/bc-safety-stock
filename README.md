@@ -7,6 +7,8 @@ A free, MIT-licensed Business Central extension that calculates **Safety Stock**
 
 **Companion blog post:** [Safety Stock in Business Central — Theory + Code](https://insidebusinesscentral.com/safety-stock-business-central-calculator/)
 
+> ⭐ If this saves you time, please **star the repo** — it helps other Business Central folks find it.
+
 ---
 
 ## What it does
@@ -135,6 +137,13 @@ If you want to see real numbers without scrubbing live data:
 - [Inside Business Central — blog](https://insidebusinesscentral.com)
 - [GMSOFT AppSource publisher](https://appsource.microsoft.com/en-us/marketplace/apps?search=GMSOFT)
 - Companion deep-dive: [Safety Stock in BC — full theory + code walkthrough](https://insidebusinesscentral.com/safety-stock-business-central-calculator/)
+
+### More free BC tools by GMSOFT
+
+- **bc-safety-stock** — Z-score safety stock calculator (you are here)
+- [bc-eoq-calculator](https://github.com/GmsoftLtd/bc-eoq-calculator) — Wilson EOQ calculator (how much to order)
+- [bc-reorder-point](https://github.com/GmsoftLtd/bc-reorder-point) — reorder point calculator (when to order)
+- [bc-ValueEntryGL-Audit](https://github.com/GmsoftLtd/bc-ValueEntryGL-Audit) — inventory-to-G/L audit
 
 ## License
 
